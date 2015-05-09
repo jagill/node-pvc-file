@@ -1,5 +1,6 @@
 pvc-file
 ========
+[![Circle CI](https://circleci.com/gh/jagill/node-pvc-file/tree/master.svg?style=shield)](https://circleci.com/gh/jagill/node-pvc-file/tree/master)
 
 In the spirit of [pvc](https://github.com/jagill/pvc), a set of Node.js
 utilities to deal with the file as a stream.
