@@ -18,6 +18,8 @@ var pvcf = require('pvc-file');
 ### Walk a directory
 When a stream writes a path to `pvcf.walker`, it walks down the directory
 tree, pushing a `stats` object augmented by the name and path of the file.
+It walks directory by directory, so it can walk an infinite directory tree,
+descending only as fast as the output allows.
 
 ```js
 var walker = pvcf.walker()
@@ -34,9 +36,9 @@ walker.on('data', function (data) {
 
 ### Convert files to streams
 When a stream writes a file path to `pvcf.fileStreamer`, it opens a Readable
-file stream, pushing it line by line down the pipe.  It will only consume the
-next line when it the pipeline requests it, and only open the next file if it
-has exhausted the current file stream, which makes it very memory efficient.
+file stream, pushing the chunks down the pipe.  It will only open the
+next file stream if it has exhausted the current file stream, which
+makes it very memory efficient.
 
 ```js
 var streamer = pvcf.fileStreamer()
@@ -45,11 +47,9 @@ streamer.write('file2');
 streamer.on('data', function (data) {
   console.log(data);
 });
-// 'first line from file 1'
-// 'second line from file 1'
-// 'first line from file 2'
-// 'second line from file 2'
-// 'third line from file 2'
+// 'first line from file 1\nsecond line from file 1\n'
+// 'first line from file 2\nsecond line from file 2'
+// '\nthird line from file 2\n'
 // ...
 ```
 

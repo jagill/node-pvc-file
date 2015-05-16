@@ -1,8 +1,19 @@
 fs = require 'fs'
 _path = require 'path'
 {Transform, Duplex, Readable} = require 'stream'
-split = require 'split'
 chokidar = require 'chokidar'
+
+_extend = ->
+  base = arguments[0]
+  return {} unless base
+
+  exts = Array.prototype.slice arguments, 1
+  for ext in exts
+    for own k, v of ext
+      base[k] = v
+
+  return base
+
 
 # Accepts incoming directory paths and outputs the filetree underneath them.
 # The output is an lstat object, with the additional fields name: and path:
@@ -40,34 +51,6 @@ class Walker extends Transform
 
 exports.walker = -> new Walker()
 
-###
-Accepts incoming filepaths, and outputs their contents as a stream of lines.
-
-Note that this flattens the output.
-###
-class FileStreamer extends Duplex
-  constructor: () ->
-    super allowHalfOpen: true, readableObjectMode: true, writableObjectMode: true
-    @currentStream = null
-
-  _read: (size) ->
-    if @currentStream
-      @push @currentStream.read()
-    else
-      # Signal that we are not done, but don't have anything currently.
-      @push ''
-
-  _write: (filepath, encoding, done) ->
-    s = fs.createReadStream(filepath)
-    s.on 'end', ->
-      @currentStream = null
-      done()
-    s.on 'error', (err) ->
-      @emit 'error', err
-    @currentStream = s.pipe(split())
-
-exports.fileStreamer = -> new FileStreamer()
-
 ###*
 Watches a directory, outputting any changes.  This is just a wrapper for
 chokidar, converting its output into a stream.
@@ -83,6 +66,13 @@ class Watcher extends Readable
   ###
   constructor: (path, options) ->
     super objectMode: true
+    defaultOptions =
+      ignore: [
+        /\.git/
+      ]
+
+    options = _extend defaultOptions, options
+
     @watcher = chokidar.watch path, options
     ['add', 'change', 'unlink', 'addDir', 'unlinkDir'].forEach (type) =>
       @watcher.on type, (path) =>
@@ -92,3 +82,60 @@ class Watcher extends Readable
   _read: ->
 
 exports.watcher = (path, options) -> new Watcher path, options
+
+###
+Accepts incoming filepaths, and outputs their contents as a stream.
+
+Note that this flattens the output, so that the streams are concatenated.
+The output IS NOT in objectMode.
+###
+class FileStreamer extends Duplex
+  constructor: () ->
+    super allowHalfOpen: true, writableObjectMode: true
+    @queue = []
+    @currentStream = null
+    @finished = false
+    @on 'finish', =>
+      @finished = true
+
+  _pump: ->
+    while (chunk = @currentStream.read())?
+      break unless @push chunk
+
+  _makeStream: ->
+    task = @queue.shift()
+
+    unless task
+      # No more inputs
+      # If finished, signal end, else wait
+      @push if @finished then null else ''
+      return
+
+    @currentStream = s = fs.createReadStream(task.filepath)
+    s.on 'end', =>
+      @currentStream = null
+      task.done()
+      @_makeStream()
+    s.on 'error', (err) =>
+      @emit 'error', err
+    s.on 'readable', =>
+      @_pump()
+
+
+  _read: (size) ->
+    if @currentStream
+      @_pump()
+    else
+      # Must open a stream
+      @_makeStream()
+
+
+  _write: (filepath, encoding, done) ->
+    if filepath
+      @queue.push {filepath, done}
+    else
+      # just ignore falsey paths
+      done()
+
+
+exports.fileStreamer = -> new FileStreamer()

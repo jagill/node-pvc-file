@@ -1,6 +1,6 @@
 {
   "name": "pvc-file",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Basic utilities for object streams from the file-system.",
   "main": "dist/filePvc.js",
   "directories": {
@@ -25,7 +25,6 @@
     "sinon": "^1.14.1"
   },
   "dependencies": {
-    "chokidar": "^1.0.1",
-    "split": "^0.3.3"
+    "chokidar": "^1.0.1"
   }
 }

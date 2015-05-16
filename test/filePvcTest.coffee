@@ -1,5 +1,6 @@
 {assert} = require 'chai'
 filePvc = require './filePvc'
+fs = require 'fs'
 
 describe 'walker', ->
   s = null
@@ -101,3 +102,31 @@ describe 'walker', ->
     setTimeout ->
         s.end()
       , 10
+
+describe 'fileStreamer', ->
+  s = null
+
+  assertOutput = (stream, output, done) ->
+    chunks = []
+    s.on 'readable', ->
+      while (chunk = s.read())?
+        chunks.push chunk if chunk
+
+    s.on 'end', ->
+      streamOutput = chunks.join ''
+      assert.equal streamOutput, output
+      done()
+
+  beforeEach ->
+    s = filePvc.fileStreamer()
+
+  it 'should parse the lines of a file', (done) ->
+    assertOutput s, 'A line 1\nA line 2\n', done
+    s.write './test/data/a.txt'
+    s.end()
+
+  it 'should concat two files', (done) ->
+    assertOutput s, 'A line 1\nA line 2\nB line 1\nB line 2\n', done
+    s.write './test/data/a.txt'
+    s.write './test/data/b.txt'
+    s.end()

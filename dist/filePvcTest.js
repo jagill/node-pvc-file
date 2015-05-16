@@ -1,9 +1,11 @@
 (function() {
-  var assert, filePvc;
+  var assert, filePvc, fs;
 
   assert = require('chai').assert;
 
   filePvc = require('./filePvc');
+
+  fs = require('fs');
 
   describe('walker', function() {
     var s;
@@ -124,6 +126,47 @@
       return setTimeout(function() {
         return s.end();
       }, 10);
+    });
+  });
+
+  describe('fileStreamer', function() {
+    var assertOutput, s;
+    s = null;
+    assertOutput = function(stream, output, done) {
+      var chunks;
+      chunks = [];
+      s.on('readable', function() {
+        var chunk, results;
+        results = [];
+        while ((chunk = s.read()) != null) {
+          if (chunk) {
+            results.push(chunks.push(chunk));
+          } else {
+            results.push(void 0);
+          }
+        }
+        return results;
+      });
+      return s.on('end', function() {
+        var streamOutput;
+        streamOutput = chunks.join('');
+        assert.equal(streamOutput, output);
+        return done();
+      });
+    };
+    beforeEach(function() {
+      return s = filePvc.fileStreamer();
+    });
+    it('should parse the lines of a file', function(done) {
+      assertOutput(s, 'A line 1\nA line 2\n', done);
+      s.write('./test/data/a.txt');
+      return s.end();
+    });
+    return it('should concat two files', function(done) {
+      assertOutput(s, 'A line 1\nA line 2\nB line 1\nB line 2\n', done);
+      s.write('./test/data/a.txt');
+      s.write('./test/data/b.txt');
+      return s.end();
     });
   });
 
