@@ -1,0 +1,7 @@
+#! /bin/bash
+
+set -e
+
+npm install --loglevel=error
+node_modules/.bin/gulp
+

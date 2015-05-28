@@ -104,12 +104,13 @@
      */
 
     function Watcher(path, options) {
-      var defaultOptions;
+      var defaultIgnored, defaultOptions;
       Watcher.__super__.constructor.call(this, {
         objectMode: true
       });
+      defaultIgnored = [/~$/, '.*.swp', /\.git\//, 'node_modules', '*.pyc', '*.pyo', '.DS_Store', '\#*\#'];
       defaultOptions = {
-        ignore: [/\.git/]
+        ignored: defaultIgnored
       };
       options = _extend(defaultOptions, options);
       this.watcher = chokidar.watch(path, options);
@@ -140,7 +141,7 @@
   Accepts incoming filepaths, and outputs their contents as a stream.
   
   Note that this flattens the output, so that the streams are concatenated.
-  The output IS NOT in objectMode.
+  The output is NOT in objectMode.
    */
 
   FileStreamer = (function(superClass) {

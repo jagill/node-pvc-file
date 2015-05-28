@@ -66,10 +66,22 @@ class Watcher extends Readable
   ###
   constructor: (path, options) ->
     super objectMode: true
+
+    # TODO: Take additional ignored in as an option
+    # TODO: Take in a flag to not use default ignored.
+    defaultIgnored = [
+      /~$/,
+      '.*.swp',
+      /\.git\//,
+      'node_modules',
+      '*.pyc',
+      '*.pyo',
+      '.DS_Store',
+      '\#*\#',
+    ]
+
     defaultOptions =
-      ignore: [
-        /\.git/
-      ]
+      ignored: defaultIgnored
 
     options = _extend defaultOptions, options
 
@@ -87,7 +99,7 @@ exports.watcher = (path, options) -> new Watcher path, options
 Accepts incoming filepaths, and outputs their contents as a stream.
 
 Note that this flattens the output, so that the streams are concatenated.
-The output IS NOT in objectMode.
+The output is NOT in objectMode.
 ###
 class FileStreamer extends Duplex
   constructor: () ->
