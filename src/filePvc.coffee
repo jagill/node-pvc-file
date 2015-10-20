@@ -71,11 +71,11 @@ class Watcher extends Readable
     # TODO: Take in a flag to not use default ignored.
     defaultIgnored = [
       /~$/,
-      '.*.swp',
+      '**/.*.swp',
       /\.git\//,
       'node_modules',
-      '*.pyc',
-      '*.pyo',
+      '**/*.pyc',
+      '**/*.pyo',
       '.DS_Store',
       '\#*\#',
     ]

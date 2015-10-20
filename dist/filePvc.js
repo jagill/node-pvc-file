@@ -108,7 +108,7 @@
       Watcher.__super__.constructor.call(this, {
         objectMode: true
       });
-      defaultIgnored = [/~$/, '.*.swp', /\.git\//, 'node_modules', '*.pyc', '*.pyo', '.DS_Store', '\#*\#'];
+      defaultIgnored = [/~$/, '**/.*.swp', /\.git\//, 'node_modules', '**/*.pyc', '**/*.pyo', '.DS_Store', '\#*\#'];
       defaultOptions = {
         ignored: defaultIgnored
       };
