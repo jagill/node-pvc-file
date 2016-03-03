@@ -2,6 +2,7 @@ fs = require 'fs'
 _path = require 'path'
 {Transform, Duplex, Readable} = require 'stream'
 chokidar = require 'chokidar'
+pvc = require 'pvc'
 
 _extend = ->
   base = arguments[0]

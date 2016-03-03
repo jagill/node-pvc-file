@@ -1,5 +1,5 @@
 (function() {
-  var Duplex, FileStreamer, Readable, Transform, Walker, Watcher, _extend, _path, chokidar, fs, ref,
+  var Duplex, FileStreamer, Readable, Transform, Walker, Watcher, _extend, _path, chokidar, fs, pvc, ref,
     hasProp = {}.hasOwnProperty,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -10,6 +10,8 @@
   ref = require('stream'), Transform = ref.Transform, Duplex = ref.Duplex, Readable = ref.Readable;
 
   chokidar = require('chokidar');
+
+  pvc = require('pvc');
 
   _extend = function() {
     var base, ext, exts, i, k, len, v;
